@@ -18,6 +18,9 @@ class Session(TcpClient tcpClient)
 		if (socket.Available <= 0)
 			return;
 
+		// 	TODO: message boundaries!!!!
+		// 		- Under procedure and osc
+
 		int packetLength = socket.Available;
 		byte[] data = new byte[packetLength];
 

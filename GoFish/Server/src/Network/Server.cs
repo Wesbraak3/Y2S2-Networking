@@ -8,7 +8,7 @@ static class TcpServer
     static private readonly TcpListener listener = new(IPAddress.Any, 50001);
     static private bool running = false;
 
-    static public void Run()
+    static public void Start()
     {
         if (running)
             return;

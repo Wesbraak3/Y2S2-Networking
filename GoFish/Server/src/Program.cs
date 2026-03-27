@@ -6,17 +6,17 @@ static class Program
 	{
 		Start();
 
-		Update();
+		Run();
 
 		Exit();
 	}
 
 	static private void Start()
 	{
-		TcpServer.Run();
+		TcpServer.Start();
 	}
 
-	static private void Update()
+	static private void Run()
 	{
 		while (true)
 		{
