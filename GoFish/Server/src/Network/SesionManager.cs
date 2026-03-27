@@ -7,11 +7,18 @@ static class SessionManager
     static private readonly List<Session> clientSessions = [];
     static private bool processing = false;
 
-    static public List<Session> GetClients() => clientSessions;
+    static public List<Session> GetSessions() => clientSessions;
     static public void AddSession(TcpClient newClient)
     {
         clientSessions.Add(new(newClient));
         Console.WriteLine($"Client connected from remote end point {newClient.Client.RemoteEndPoint}");
+    }
+    static public void ClearSessions()
+    {
+        while (processing)
+            Thread.Sleep(10);
+
+        clientSessions.Clear();
     }
 
     static public void CheckMessages()
@@ -36,13 +43,5 @@ static class SessionManager
             }
             return false;
         });
-    }
-
-    static public void CleanupClients()
-    {
-        while (processing)
-            Thread.Sleep(10);
-
-        clientSessions.Clear();
     }
 }

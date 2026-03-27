@@ -3,50 +3,24 @@ using System.Net.Sockets;
 
 namespace Network;
 
-static class Server
+static class TcpServer
 {
-    static private TcpListener listener;
-
+    static private readonly TcpListener listener = new(IPAddress.Any, 50001);
     static private bool running = false;
 
-    static public void Run(int port)
+    static public void Run()
     {
         if (running)
             return;
 
-        // Start listening for TCP connection requests, on the given port:
-        listener = new(IPAddress.Any, port);
-
         listener.Start();
         running = true;
 
-        Console.WriteLine($"Starting TCP server on port {port} - listening for incoming connection requests");
+        Console.WriteLine($"Starting TCP server on port {50001} - listening for incoming connection requests");
         Console.WriteLine("Press Q to stop the server");
-
-        while (running)
-        {
-            Thread.Sleep(10);
-
-            AcceptPendingClients();
-            SessionManager.CheckMessages();
-
-            OnExitPressed();
-        }
-
-        Shutdown();
     }
 
-    static private void OnExitPressed()
-    {
-        if (Console.KeyAvailable)
-        {
-            char input = Console.ReadKey(true).KeyChar;
-            if (input == 'q')
-                running = false;
-        }
-    }
-
-    static private void AcceptPendingClients()
+    static public void CheckPendingSessions()
     {
         while (listener.Pending())
         {
@@ -54,10 +28,11 @@ static class Server
         }
     }
 
-    static private void Shutdown()
+    static public void Shutdown()
     {
         Console.WriteLine("Stopping server");
 
+        SessionManager.ClearSessions();
         listener.Stop();
 
         Console.WriteLine("Server stopped");

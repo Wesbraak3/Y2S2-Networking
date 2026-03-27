@@ -8,7 +8,7 @@ class Session(TcpClient tcpClient)
 	private readonly Socket socket = tcpClient.Client;
 	private readonly NetworkStream stream = tcpClient.GetStream();
 
-	public string EndPoint => socket.RemoteEndPoint.ToString();
+	public string EndPoint => socket.RemoteEndPoint?.ToString() ?? "Unknown";
 
 	public bool IsConnected() => client.Connected;
 	public void Close() => client.Close();
