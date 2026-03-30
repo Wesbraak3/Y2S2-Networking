@@ -2,6 +2,7 @@ using System.Net.Sockets;
 
 namespace Network;
 
+public enum SessionStatus { Connecting, Connected, Disconnecting, Disconnected }
 class Session(TcpClient tcpClient)
 {
 	private readonly TcpClient client = tcpClient;

@@ -4,46 +4,40 @@ static class Program
 {
 	static private void Main()
 	{
-		Start();
+		Initialize();
 
 		Run();
 
 		Exit();
 	}
 
-	static private void Start()
+	static private void Initialize()
 	{
-		TcpServer.Start();
+		TCPServer.Initialize();
 	}
 
-	static private void Run()
+	static async private void Run()
 	{
 		while (true)
 		{
-
-			TcpServer.CheckPendingSessions();
-			SessionManager.CheckMessages();
-
-			if (OnExitPressed())
-				break;
-
+			OnExitPressed();
 			Thread.Sleep(10);
 		}
 	}
 
-	static private bool OnExitPressed()
+	static private void OnExitPressed()
 	{
 		if (Console.KeyAvailable)
 		{
 			char input = Console.ReadKey(true).KeyChar;
 			if (input == 'q')
-				return true;
+				Exit();
 		}
-		return false;
+		return;
 	}
 
 	static private void Exit()
 	{
-		TcpServer.Shutdown();
+		TCPServer.Shutdown();
 	}
 }

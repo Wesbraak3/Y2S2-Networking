@@ -1,0 +1,19 @@
+CreateRoom,int,gameID
+,string,gameName
+,string,LANIP
+,int,LANPort
+,int,properties
+,bool,isPublic
+GetIP,,
+,,
+JoinRoom,int  ,gameID
+,int  ,roomID
+,string,LANIP
+,int,LANPort
+,,
+GetRooms,int,gameID
+ ,string,gameName
+,,
+CloseRoom,,
+,,
+Ping,,

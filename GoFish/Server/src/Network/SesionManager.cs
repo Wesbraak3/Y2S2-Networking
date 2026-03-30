@@ -2,36 +2,36 @@ using System.Net.Sockets;
 
 namespace Network;
 
-static class SessionManager
+class SessionManager
 {
-    static private readonly List<Session> clientSessions = [];
-    static private bool processing = false;
+    private readonly List<Session> clientSessions = [];
 
-    static public List<Session> GetSessions() => clientSessions;
-    static public void AddSession(TcpClient newClient)
+    public List<Session> GetSessions() => clientSessions;
+
+    public void AddSession(TcpClient newClient)
     {
         clientSessions.Add(new(newClient));
         Console.WriteLine($"Client connected from remote end point {newClient.Client.RemoteEndPoint}");
     }
-    static public void ClearSessions()
-    {
-        while (processing)
-            Thread.Sleep(10);
 
-        clientSessions.Clear();
+    public void ClearSessions()
+    {
+        while (clientSessions.Count > 0)
+        {
+            Session session = clientSessions[0];
+
+            session.Close();
+            clientSessions.Remove(session);
+        }
     }
 
-    static public void CheckMessages()
+    public void UpdateSessions()
     {
-        processing = true;
-
         foreach (Session session in clientSessions)
             session.ReadMessages();
-
-        processing = false;
     }
 
-    static public void InactiveClients()
+    public void InactiveClients()
     {
         clientSessions.RemoveAll(session =>
         {

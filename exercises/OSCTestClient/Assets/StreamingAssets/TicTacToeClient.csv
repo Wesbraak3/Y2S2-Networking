@@ -1,0 +1,4 @@
+MakeMove,int,row
+,int,col
+,,
+Reset,,
