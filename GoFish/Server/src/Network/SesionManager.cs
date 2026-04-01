@@ -28,7 +28,29 @@ class SessionManager
     public void UpdateSessions()
     {
         foreach (Session session in clientSessions)
-            session.ReadMessages();
+            session.ReadPackets();
+    }
+
+    public Dictionary<Session, Queue<byte[]>> GetSessionMessages()
+    {
+        Dictionary<Session, Queue<byte[]>> sessionMessagesDict = [];
+
+        foreach (Session session in clientSessions)
+        {
+            Queue<byte[]> sessionMessages = session.GetAllMessages();
+
+            sessionMessagesDict.Add(session, sessionMessages);
+        }
+
+        return sessionMessagesDict;
+    }
+
+    public void Broadcast(byte[] message)
+    {
+        foreach (Session session in clientSessions)
+        {
+            session.Send(message);
+        }
     }
 
     public void InactiveClients()
