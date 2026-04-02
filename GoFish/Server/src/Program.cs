@@ -1,19 +1,23 @@
 ﻿using Network;
 
-static class Program
+static class Server // server
 {
-	static private void Main()
-	{
+	static public readonly NetworkManager networkManager = new();
+	static public readonly SessionManager sessionManager = new();
+
+	static public bool IsRunnning {get; private set;} = false;
+
+	static private void Main() =>
 		Initialize();
-
-		Run();
-
-		Exit();
-	}
 
 	static private void Initialize()
 	{
-		TCPServer.Initialize();
+		IsRunnning = true;
+	
+		sessionManager.Initialize();
+		networkManager.Initialize();
+
+		Run();
 	}
 
 	static async private void Run()
@@ -21,7 +25,7 @@ static class Program
 		while (true)
 		{
 			OnExitPressed();
-			Thread.Sleep(10);
+			Thread.Sleep(100);
 		}
 	}
 
@@ -31,13 +35,14 @@ static class Program
 		{
 			char input = Console.ReadKey(true).KeyChar;
 			if (input == 'q')
-				Exit();
+				Shutdown();
 		}
 		return;
 	}
 
-	static private void Exit()
+	static private void Shutdown()
 	{
-		TCPServer.Shutdown();
+		networkManager.Shutdown();
+		sessionManager.Shutdown();
 	}
 }

@@ -12,7 +12,7 @@ class ActiveGamesManager
 
     private static Session? GetSession(IPEndPoint remote)
     {
-        Session? session = TCPServer.GetSessionManger().GetSession(remote);
+        Session? session = NetworkManager.GetSessionManger().GetSession(remote);
 
         if (session == null)
             Console.WriteLine("No Session found for " + remote);

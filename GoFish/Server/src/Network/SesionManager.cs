@@ -5,17 +5,45 @@ namespace Network;
 
 class SessionManager
 {
-    private readonly List<Session> clientSessions = [];
+    private readonly List<Session> activeSessions = [];
 
-    public List<Session> GetSessions() => clientSessions;
+    public  void Initialize ()
+    {
+        NewSession();
+    }
 
-    public void AddSession(TcpClient newClient)
+    private async void Run()
+    {
+        
+    }
+
+    public  void Shutdown ()
+    {
+        
+    }
+
+    public Session NewSession()
+    {
+        Session newSession;
+
+        
+        return newSession
+    }
+
+    public void NewConnection(TcpClient client)
+    {
+        
+    }
+
+
+
+     public void AddSession(TcpClient newClient)
     {
         clientSessions.Add(new(newClient));
         Console.WriteLine($"Client connected from remote end point {newClient.Client.RemoteEndPoint}");
     }
 
-    public Session? GetSession(IPEndPoint endpoint)
+     public Session? GetSession(IPEndPoint endpoint)
     {
         foreach (Session session in clientSessions)
         {
@@ -27,7 +55,7 @@ class SessionManager
         return null;
     }
 
-    public void ClearSessions()
+     public void ClearSessions()
     {
         while (clientSessions.Count > 0)
         {
@@ -38,13 +66,13 @@ class SessionManager
         }
     }
 
-    public void UpdateSessions()
+     public void UpdateSessions()
     {
         foreach (Session session in clientSessions)
             session.ReadPackets();
     }
 
-    public Dictionary<Session, Queue<byte[]>> GetSessionMessages()
+     public Dictionary<Session, Queue<byte[]>> GetSessionMessages()
     {
         Dictionary<Session, Queue<byte[]>> sessionMessagesDict = [];
 
@@ -58,7 +86,7 @@ class SessionManager
         return sessionMessagesDict;
     }
 
-    public void Broadcast(byte[] message)
+     public void Broadcast(byte[] message)
     {
         foreach (Session session in clientSessions)
         {
@@ -66,7 +94,7 @@ class SessionManager
         }
     }
 
-    public void InactiveClients()
+     public void InactiveClients()
     {
         clientSessions.RemoveAll(session =>
         {
