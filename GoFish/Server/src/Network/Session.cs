@@ -1,6 +1,5 @@
 using System.Net.Sockets;
 using System.Net;
-using System.Reflection.Metadata;
 
 namespace Network;
 
@@ -9,10 +8,12 @@ class Session(TcpClient tcpClient)
 	private readonly TcpClient client = tcpClient;
 	private readonly Socket socket = tcpClient.Client;
 	private readonly NetworkStream stream = tcpClient.GetStream();
-	public IPEndPoint EndPoint = (IPEndPoint)tcpClient.Client.RemoteEndPoint!;
+	private IPEndPoint endPoint = (IPEndPoint)tcpClient.Client.RemoteEndPoint!;
 
 	private Queue<byte[]> messageQue = new();
 	private bool _isBusy = false;
+
+	public IPEndPoint GetEndPoint() => endPoint;
 
 	public bool IsConnected() => client.Connected;
 	public void Close()
@@ -86,7 +87,7 @@ class Session(TcpClient tcpClient)
 		return allMessages;
 	}
 
-	public void Send(byte[] packet)
+	public void Send(byte[] message)
 	{
 		if (!IsConnected())
 		{
@@ -99,8 +100,8 @@ class Session(TcpClient tcpClient)
 			stream.WriteTimeout = 1;
 			if (stream.CanWrite)
 			{
-				stream.Write(BitConverter.GetBytes(packet.Length), 0, 4);
-				stream.Write(packet, 0, packet.Length);
+				stream.Write(BitConverter.GetBytes(message.Length), 0, 4);
+				stream.Write(message, 0, message.Length);
 			}
 			else
 			{

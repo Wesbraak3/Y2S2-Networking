@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 
 namespace Network;
@@ -12,6 +13,18 @@ class SessionManager
     {
         clientSessions.Add(new(newClient));
         Console.WriteLine($"Client connected from remote end point {newClient.Client.RemoteEndPoint}");
+    }
+
+    public Session? GetSession(IPEndPoint endpoint)
+    {
+        foreach (Session session in clientSessions)
+        {
+            if (session.GetEndPoint().Equals(endpoint))
+                return session;
+        }
+
+        Console.WriteLine("No Session found for " + endpoint);
+        return null;
     }
 
     public void ClearSessions()

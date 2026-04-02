@@ -10,11 +10,13 @@ static class TCPServer
 {
     static private readonly OSCDispatcher dispatcher = new();
 
-    static private readonly TcpListener listener = new(IPAddress.Any, 50001);
+    static private readonly TcpListener listener = new(IPAddress.Any, 50011);
     static private readonly SessionManager sessionManager = new();
 
     static private bool shuttingDown = false;
     static private bool isProcessing = false;
+
+    public static SessionManager GetSessionManger() => sessionManager;
 
     static public void Initialize()
     {
@@ -43,7 +45,7 @@ static class TCPServer
 
             foreach (var (session, messages) in sessionManager.GetSessionMessages())
                 while (messages.Count > 0)
-                    dispatcher.HandleMessage(messages.Dequeue(), session.EndPoint);
+                    dispatcher.HandleMessage(messages.Dequeue(), session.GetEndPoint());
 
             isProcessing = false;
             Thread.Sleep(10);
@@ -75,14 +77,18 @@ static class TCPServer
     }
 
 
-    static Game goFishGame;
+    static readonly ActiveGamesManager goFishGames = new();
     static void InitializeGoFish()
     {
-        goFishGame = new();
+        dispatcher.AddListener("/Create", goFishGames.CreateGame);
+        // dispatcher.AddListener("/Join", goFishGames.JoinGame);
+        // dispatcher.AddListener("/Leave", goFishGames.LeaveGame);
 
-        // board.OnActivePlayerChange += ActivePlayerChangeRpc;
-        // board.OnCellChange += CellChangeRpc;
-        // board.OnGameOver += GameOverRpc;
+        // dispatcher.AddListener("/Start", goFishGames.StartGame);
+        // dispatcher.AddListener("/Reset", goFishGames.ResetGame);
+
+        // dispatcher.AddListener("/FishForCard", goFishGames.FishForCardInGame);
+        // dispatcher.AddListener("/DrawCard", goFishGames.DrawCardInGame);
     }
 
     static void Broadcast()

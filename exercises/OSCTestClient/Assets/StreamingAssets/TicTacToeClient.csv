@@ -1,4 +1,12 @@
-MakeMove,int,row
-,int,col
+Create,,
+Leave,,
 ,,
+Join,int,SessionKey
+,,
+Start,,
 Reset,,
+,,
+FishForCard,int,Player
+,string,CardRank
+,,
+DrawCard,,

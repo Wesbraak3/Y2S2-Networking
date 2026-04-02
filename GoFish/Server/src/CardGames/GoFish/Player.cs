@@ -1,10 +1,17 @@
+using Network;
+
 namespace CardGames.GoFish;
 
-public class Player
+internal class Player(Session playerSession, bool isHost = false)
 {
-    private List<Card> cardsInHand = [];
-    private List<Book> booksOwned = [];
+    private readonly Session session = playerSession;
+    private readonly bool isHost = isHost;
 
+    private readonly List<Card> cardsInHand = [];
+    private readonly List<Book> booksOwned = [];
+
+    public bool IsHost() => isHost;
+    public Session GetSession() => session;
     public bool FishForCard(Player targetPlayer, string fishingFor)
     {
         return false;

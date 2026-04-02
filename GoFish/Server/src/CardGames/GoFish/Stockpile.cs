@@ -34,4 +34,10 @@ public class Stockpile
 
         return drawnCard;
     }
+
+    public void Reset()
+    {
+        stockpile.Clear();
+        Setup();
+    }
 }
