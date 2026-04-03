@@ -5,7 +5,7 @@ static class Server // server
 	static public readonly NetworkManager networkManager = new();
 	static public readonly SessionManager sessionManager = new();
 
-	static public bool IsRunnning {get; private set;} = false;
+	static public bool IsRunnning { get; private set; } = false;
 
 	static private void Main() =>
 		Initialize();
@@ -13,35 +13,90 @@ static class Server // server
 	static private void Initialize()
 	{
 		IsRunnning = true;
-	
+
 		sessionManager.Initialize();
 		networkManager.Initialize();
 
 		Run();
 	}
 
-	static async private void Run()
+	static private void Run()
 	{
-		while (true)
+		while (IsRunnning)
 		{
-			OnExitPressed();
-			Thread.Sleep(100);
+			string? input = Console.ReadLine();
+
+			if (string.IsNullOrWhiteSpace(input))
+				continue;
+
+			HandleCommand(input.Trim().ToLower());
 		}
 	}
 
-	static private void OnExitPressed()
+	static private void HandleCommand(string input)
 	{
-		if (Console.KeyAvailable)
+		switch (input)
 		{
-			char input = Console.ReadKey(true).KeyChar;
-			if (input == 'q')
+			case "q":
+			case "quit":
+			case "exit":
 				Shutdown();
+				break;
+
+			case "list":
+				ListSessions();
+				break;
+
+			case "help":
+				PrintHelp();
+				break;
+
+			case "broadcast":
+				sessionManager.Broadcast(System.Text.Encoding.UTF8.GetBytes("Server message"));
+				break;
+
+			case "kickall":
+				foreach (var session in sessionManager.GetAllSessions())
+				{
+					foreach (var conn in session.GetConnections())
+					{
+						conn.SendMessage(System.Text.Encoding.UTF8.GetBytes("You were kicked"));
+					}
+				}
+				break;
+
+			default:
+				Console.WriteLine($"Unknown command: {input}");
+				break;
 		}
-		return;
+	}
+
+	static private void ListSessions()
+	{
+		Console.WriteLine("Active sessions:");
+
+		foreach (var session in sessionManager.GetAllSessions())
+		{
+			Console.WriteLine(
+				$"{session.GetType().Name} ({session.Id}) - Connections: {session.GetConnections().Count}"
+			);
+		}
+	}
+
+	static private void PrintHelp()
+	{
+		Console.WriteLine("Available commands:");
+		Console.WriteLine("  help       - show commands");
+		Console.WriteLine("  list       - list sessions");
+		Console.WriteLine("  broadcast       - tell everyone something");
+		Console.WriteLine("  kickall       - Kick everyone");
+		Console.WriteLine("  quit / q   - stop server");
 	}
 
 	static private void Shutdown()
 	{
+		IsRunnning = false;
+
 		networkManager.Shutdown();
 		sessionManager.Shutdown();
 	}

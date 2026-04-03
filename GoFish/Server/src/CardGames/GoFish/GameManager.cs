@@ -36,7 +36,7 @@ class GameManager(Session session)
         {
             if (player.GetSession() == session)
             {
-                Console.WriteLine("Player already in game: " + session.GetEndPoint());
+                Console.WriteLine("Player already in game: ");
                 return;
             }
         }
