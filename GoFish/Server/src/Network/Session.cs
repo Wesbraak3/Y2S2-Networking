@@ -23,9 +23,6 @@ public abstract class Session
 
 	virtual public void HandleMessage(Connection connection, byte[] message)
 	{
-		OSCMessageIn mess = new(message);
-		Console.WriteLine("Message arrives on server: " + mess);
-
 		dispatcher.HandleMessage(message, connection.EndPoint);
 	}
 
@@ -35,7 +32,7 @@ public abstract class Session
 			connection.SendMessage(message);
 	}
 
-	public void AddConnection(Connection connection)
+	virtual public void AddConnection(Connection connection)
 	{
 		connection.ActiveSession = this;
 		connections.Add(connection);
@@ -43,7 +40,7 @@ public abstract class Session
 		OnEnterSession?.Invoke(connection);
 	}
 
-	public void RemoveConnection(Connection connection)
+	virtual public void RemoveConnection(Connection connection)
 	{
 		connection.ActiveSession = null;
 		connections.Remove(connection);

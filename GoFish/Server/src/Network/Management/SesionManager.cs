@@ -1,4 +1,6 @@
 
+using OSCTools;
+
 namespace Network;
 
 class SessionManager
@@ -27,6 +29,13 @@ class SessionManager
             return;
 
         origin.RemoveConnection(connection);
+
+        OSCMessageOut messageOut = new("/SwapScene");
+
+        string scene = target.GetType().Name;
+        messageOut.AddString(scene);
+
+        connection.SendMessage(messageOut.GetBytes());
 
         target.AddConnection(connection);
     }

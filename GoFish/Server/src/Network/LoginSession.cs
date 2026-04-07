@@ -12,6 +12,11 @@ public class LoginSession : Session
         dispatcher.AddListener("/Login", Login);
     }
 
+    public override void AddConnection(Connection connection)
+    {
+        base.AddConnection(connection);
+    }
+
     private void Login(OSCMessageIn message, IPEndPoint endPoint)
     {
         string name = message.ReadString();
