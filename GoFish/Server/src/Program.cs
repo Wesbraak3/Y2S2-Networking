@@ -1,6 +1,6 @@
 ﻿using Network;
 
-static class Server // server
+static class Server
 {
 	static public readonly NetworkManager networkManager = new();
 	static public readonly SessionManager sessionManager = new();
@@ -14,8 +14,9 @@ static class Server // server
 	{
 		IsRunnning = true;
 
-		sessionManager.Initialize();
-		networkManager.Initialize();
+		InitializeServer();
+
+		Console.WriteLine("types help for console commands");
 
 		Run();
 	}
@@ -97,6 +98,16 @@ static class Server // server
 	{
 		IsRunnning = false;
 
+		ShutdownServer();
+	}
+
+	static private void InitializeServer(int port = 50011)
+	{
+		sessionManager.Initialize();
+		networkManager.Initialize(port);
+	}
+	static private void ShutdownServer()
+	{
 		networkManager.Shutdown();
 		sessionManager.Shutdown();
 	}

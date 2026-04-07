@@ -12,7 +12,7 @@ public abstract class Session
 	private readonly List<Connection> connections = [];
 
 	// osc
-	private readonly OSCDispatcher dispatcher = new();
+	protected readonly OSCDispatcher dispatcher = new();
 
 	public List<Connection> GetConnections() => [.. connections];
 
@@ -21,7 +21,7 @@ public abstract class Session
 		dispatcher.ShowIncomingMessages = true;
 	}
 
-	public void HandleMessage(Connection connection, byte[] message)
+	virtual public void HandleMessage(Connection connection, byte[] message)
 	{
 		OSCMessageIn mess = new(message);
 		Console.WriteLine("Message arrives on server: " + mess);

@@ -5,15 +5,15 @@ namespace Network;
 
 class NetworkManager
 {
-    private readonly TcpListener listener = new(IPAddress.Any, 50011);
+    private TcpListener listener = new(IPAddress.Any, 50011);
     private bool isProcessing = false;
 
-    public void Initialize()
+    public void Initialize(int port = 50011)
     {
+        listener = new(IPAddress.Any, port);
         listener.Start();
 
-        Console.WriteLine($"Starting TCP server on port {50001} - listening for incoming connection requests");
-        Console.WriteLine("Press Q to stop the server");
+        Console.WriteLine($"Starting TCP server on port {port} - listening for incoming connection requests");
 
         Task.Run(Run);
     }
