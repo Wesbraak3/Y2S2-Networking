@@ -14,18 +14,21 @@ class SessionManager
         AddSession(LobbySession);
     }
 
-    private async void Run()
-    {
-
-    }
-
     public void Shutdown()
     {
 
     }
-    public void TransferConnection()
-    {
 
+    public void TransferConnection(Connection connection, Session target)
+    {
+        Session? origin = connection.ActiveSession;
+
+        if (origin == null)
+            return;
+
+        origin.RemoveConnection(connection);
+
+        target.AddConnection(connection);
     }
 
     public void AddSession(Session session)

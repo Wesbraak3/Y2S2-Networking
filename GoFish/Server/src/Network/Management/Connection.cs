@@ -13,6 +13,10 @@ public class Connection(TcpClient tcpClient)
 
 	public IPEndPoint EndPoint { get; private set; } = (IPEndPoint)tcpClient.Client.RemoteEndPoint!;
 
+	// TODO
+	// Get player stats after login instead of creating new player
+	public Player Player { get; private set; } = new();
+
 	public bool IsConnected() => client.Connected;
 
 	public async Task Run()
@@ -65,8 +69,6 @@ public class Connection(TcpClient tcpClient)
 
 		return message;
 	}
-
-
 
 	public void SendMessage(byte[] message)
 	{
