@@ -1,4 +1,5 @@
-﻿using Network;
+﻿using CardGames.GoFish;
+using Network;
 
 static class Server
 {
@@ -7,8 +8,10 @@ static class Server
 
 	static public bool IsRunnning { get; private set; } = false;
 
-	static private void Main() =>
+	static private void Main()
+	{
 		Initialize();
+	}
 
 	static private void Initialize()
 	{
@@ -36,7 +39,9 @@ static class Server
 
 	static private void HandleCommand(string input)
 	{
-		switch (input)
+		string[] commands = input.Split();
+
+		switch (commands[0])
 		{
 			case "q":
 			case "quit":
@@ -46,6 +51,13 @@ static class Server
 
 			case "list":
 				ListSessions();
+				break;
+
+			case "game":
+				if (commands.Length <= 1)
+					break;
+
+				PrintGameState(commands);
 				break;
 
 			case "help":
@@ -69,6 +81,80 @@ static class Server
 			default:
 				Console.WriteLine($"Unknown command: {input}");
 				break;
+		}
+	}
+
+	static private void PrintGameState(string[] commands)
+	{
+		if (!Guid.TryParse(commands[1], out Guid gameId))
+		{
+			Console.WriteLine("Invalid game ID");
+			return;
+		}
+		if (sessionManager.GetSession(gameId) is not GoFishSession session)
+		{
+			Console.WriteLine("Session is not a GoFishSession");
+			return;
+		}
+
+		Console.WriteLine($"Game ID: {gameId}");
+		Console.WriteLine($"Ongoing: {session.GameOngoing()}");
+
+		GameManager gameManager = session.GetGameManager();
+
+		Console.WriteLine($"Players: {gameManager.Players.Count}");
+		Console.WriteLine($"Spectators: {gameManager.Spectators.Count}");
+		Console.WriteLine();
+		Console.WriteLine($"Active player: {gameManager.ActivePlayerIndex}");
+		Console.WriteLine();
+
+		if (session.GameOngoing())
+		{
+			var players = gameManager.Players;
+
+			List<List<string>> columns = [];
+
+			foreach (Player player in players)
+			{
+				columns.Add(BuildPlayerLines(player));
+			}
+
+			// Determine layout
+			int maxRows = columns.Max(col => col.Count);
+			int colWidth = columns
+				.SelectMany(col => col)
+				.Max(line => line.Length) + 2;
+
+			// Print row by row
+			for (int row = 0; row < maxRows; row++)
+			{
+				foreach (var col in columns)
+				{
+					string text = row < col.Count ? col[row] : "";
+					Console.Write(text.PadRight(colWidth) + "| ");
+				}
+
+				Console.WriteLine();
+			}
+		}
+
+		static List<string> BuildPlayerLines(Player player)
+		{
+			List<string> lines = new();
+
+			lines.Add($"Player: {player.connection.Username}");
+			lines.Add($"Books: {player.GetBookCount()}");
+
+			var grouped = player.GetCardsInHand()
+				.GroupBy(c => c.Rank)
+				.OrderBy(g => g.Key);
+
+			foreach (var group in grouped)
+			{
+				lines.Add($"  {group.Key}: {group.Count()}");
+			}
+
+			return lines;
 		}
 	}
 

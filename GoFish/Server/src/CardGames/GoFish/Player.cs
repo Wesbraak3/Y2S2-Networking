@@ -2,41 +2,36 @@ using Network;
 
 namespace CardGames.GoFish;
 
-internal class Player(Session playerSession, bool isHost = false)
+public class Player(Connection connection, bool isHost = false)
 {
-    private readonly Session session = playerSession;
-    private readonly bool isHost = isHost;
-
+    public readonly Connection connection = connection;
     private readonly List<Card> cardsInHand = [];
     private readonly List<Book> booksOwned = [];
 
-    public bool IsHost() => isHost;
-    public Session GetSession() => session;
-    public bool FishForCard(Player targetPlayer, string fishingFor)
-    {
-        return false;
-    }
+    public bool IsHost { get; private set; } = isHost;
 
-    public bool HasCard(string rank)
+    public void SetAsHost() => IsHost = true;
+    public int GetBookCount() => booksOwned.Count;
+    public List<Card> GetCardsInHand() => cardsInHand;
+
+    public Card? HasCard(string rank)
     {
         foreach (Card card in cardsInHand)
-        {
             if (card.Rank == rank)
-            {
-
-            }
-        }
-        return false;
+                return card;
+        return null;
     }
+
+    public void RemoveCard(Card card)
+       => cardsInHand.Remove(card);
 
     public void AddCard(Card card)
     {
         cardsInHand.Add(card);
-
-        TryAddBook();
+        CheckForBooks();
     }
 
-    private void TryAddBook()
+    private void CheckForBooks()
     {
         var rankGroups = cardsInHand.GroupBy(card => card.Rank);
 

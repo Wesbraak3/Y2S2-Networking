@@ -15,7 +15,8 @@ public class Connection(TcpClient tcpClient)
 
 	// TODO
 	// Get player stats after login instead of creating new player
-	public Player Player { get; private set; } = new();
+	public string Username { get; private set; } = "";
+	public void SetUsername(string username) => Username = username;
 
 	public bool IsConnected() => client.Connected;
 

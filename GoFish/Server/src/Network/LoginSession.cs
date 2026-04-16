@@ -31,10 +31,10 @@ public class LoginSession : Session
         if (connection == null)
             return;
 
-        connection.Player.SetName(name);
+        connection.SetUsername(name);
 
         Console.WriteLine($"Player logged in: {name}");
 
-        Server.sessionManager.TransferConnection(connection, Server.sessionManager.LobbySession);
+        SessionManager.TransferConnection(connection, SessionManager.LobbySession);
     }
 }

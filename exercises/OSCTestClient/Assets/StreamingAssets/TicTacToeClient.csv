@@ -1,13 +1,15 @@
 Login,string,Name
-Create,,
+Logout,,
+CreateNew,,
+GetExisting,,
 Leave,,
-,,
-Join,int,SessionKey
-,,
+JoinExisting,string,session guid
+CanStart,,
 Start,,
 Reset,,
-,,
 FishForCard,int,Player
 ,string,CardRank
-,,
 DrawCard,,
+filler,,
+filler,,
+filler,,

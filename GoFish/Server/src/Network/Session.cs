@@ -1,4 +1,5 @@
 using OSCTools;
+using System.Net;
 
 namespace Network;
 
@@ -6,6 +7,8 @@ public abstract class Session
 {
 	public event Action<Connection>? OnEnterSession;
 	public event Action<Connection>? OnLeaveSession;
+
+	internal static SessionManager SessionManager => Server.sessionManager;
 
 	public readonly Guid Id = Guid.NewGuid();
 
@@ -30,6 +33,14 @@ public abstract class Session
 	{
 		foreach (Connection connection in GetConnections())
 			connection.SendMessage(message);
+	}
+
+	public Connection? GetConnection(IPEndPoint endPoint)
+	{
+		var connection = GetConnections()
+			.FirstOrDefault(c => c.EndPoint.Equals(endPoint));
+
+		return connection;
 	}
 
 	virtual public void AddConnection(Connection connection)

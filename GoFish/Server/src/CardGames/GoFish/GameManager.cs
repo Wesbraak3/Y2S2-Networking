@@ -1,110 +1,210 @@
-using System.Net;
 using Network;
 
 namespace CardGames.GoFish;
 
-class GameManager(Session session)
+public class GameManager()
 {
+    public readonly List<Player> Players = [];
+    public readonly List<Player> Spectators = [];
     private readonly Random rand = new(Guid.NewGuid().GetHashCode());
-    private int SessionKey = 1234;
-
-    private bool GameActive = false;
-
     private readonly Stockpile stockpile = new();
 
-    private readonly List<Player> players = [new(session, true)];
-    private int activePlayerIndex;
+    // Game settings
+    public int CardsPerPlayer { get; private set; } = 7;
+    public int MinPlayers { get; private set; } = 2;
+    public int MaxPlayers { get; private set; } = 4;
 
-    public bool IsGameActive() => GameActive;
-    public int GetSessionKey() => SessionKey;
+    // Game Logic variables
+    public bool GameActive { get; private set; } = false;
+    public bool GameOver { get; private set; } = false;
+    public int ActivePlayerIndex { get; private set; } = 0;
 
-    public bool IsPlayerInGame(Session session)
+    private Player? GetPlayer(Connection connection)
+            => Players.FirstOrDefault(p => p.connection == connection) ?? Spectators.FirstOrDefault(p => p.connection == connection);
+
+    #region Game Lobby
+    public void AddPlayer(Connection connection)
     {
-        foreach (Player player in players)
+        if (GetPlayer(connection) != null)
         {
-            if (player.GetSession() == session)
-            {
-                return true;
-            }
+            Console.WriteLine("Player already in game");
+            return;
         }
-        return false;
+        if (Players.Count >= 6 || GameActive)
+            Spectators.Add(new Player(connection));
+        else
+            Players.Add(new Player(connection, Players.Count == 0));
     }
 
-    public void AddPlayer(Session session)
+    public void RemovePlayer(Connection connection)
     {
-        foreach (Player player in players)
+        Player? player = GetPlayer(connection);
+        if (player == null)
         {
-            if (player.GetSession() == session)
-            {
-                Console.WriteLine("Player already in game: ");
+            Console.WriteLine("Player not in Game");
+            return;
+        }
+
+        bool isPlayer = Players.FirstOrDefault(p => p.connection == connection) == null;
+        bool wasHost = player.IsHost;
+
+        if (isPlayer)
+            Players.Remove(player);
+        else
+            Spectators.Remove(player);
+
+        if (wasHost)
+            SetNewHost();
+    }
+
+    public void BecomePlayer(Connection connection)
+    {
+        if (GameActive && Players.Count >= MaxPlayers)
+            return;
+        else
+        {
+            Player? player = GetPlayer(connection);
+            if (player == null)
                 return;
-            }
-        }
 
-        // players.Add(new Player(new Session(endpoint), isHost));
+            Spectators.Remove(player);
+            Players.Add(player);
+        }
     }
 
-    public bool CanStart()
+    public void BecomeSpectator(Connection connection)
     {
-        if (players.Count >= 2)
+        if (GameActive)
+            return;
+        else
         {
-            return true;
-        }
+            Player? player = GetPlayer(connection);
+            if (player == null)
+                return;
 
-        Console.WriteLine("Cant start Game");
-        return false;
+            Players.Remove(player);
+            Spectators.Add(player);
+        }
     }
 
-    public void Initialize()
+    private void SetNewHost()
     {
-        if (!CanStart())
+        if (Players.Count > 0)
+            Players.FirstOrDefault()?.SetAsHost();
+        else if (Spectators.Count > 0)
+            Spectators.FirstOrDefault()?.SetAsHost();
+        else
+            Console.WriteLine("No more players to promote");
+    }
+
+    public bool CanStart() => Players.Count >= MinPlayers;
+
+    public void StartGame(Connection connection)
+    {
+        Player? player = GetPlayer(connection);
+        // return when player cant be found/ not enouth players/ Game is already ongoing/ player is not host
+        if (player == null || !CanStart() || GameActive || !player.IsHost)
             return;
 
         GameActive = true;
+        GameOver = false;
 
-        stockpile.Reset();
+        stockpile.Setup();
         DealCards();
 
-        activePlayerIndex = rand.Next(0, players.Count);
-    }
+        ActivePlayerIndex = rand.Next(0, Players.Count);
 
-    private void DealCards()
-    {
-        int cardsPerPlayer = players.Count <= 3 ? 7 : 5; // TODO: Make Cards drawn dynamic with player set settings
-
-        foreach (Player player in players)
+        void DealCards()
         {
-            for (int i = 0; i < cardsPerPlayer; i++)
-            {
-                player.AddCard(stockpile.DrawCard()!);
-            }
+            foreach (Player player in Players)
+                for (int i = 0; i < CardsPerPlayer; i++)
+                    player.AddCard(stockpile.DrawCard()!);
         }
     }
 
-    public void NextTurn()
+    #endregion
+
+    #region Game logic
+
+    public bool IsPlayersTurn(Connection connection)
     {
-        activePlayerIndex = (activePlayerIndex + 1) % players.Count;
+        int index = Players.FindIndex(p => p.connection == connection);
+        return index != -1 && index == ActivePlayerIndex;
+    }
+    public bool IsPlayersTurn(Player player)
+    {
+        int index = Players.FindIndex(p => p == player);
+        return index != -1 && index == ActivePlayerIndex;
     }
 
-    private bool GameWon()
+    public void FishForCard(Connection connection, int targetPlayerIndex, string fishingFor)
+    {
+        Player? player = GetPlayer(connection);
+        if (player == null || !IsPlayersTurn(player))
+            return;
+
+        Player targetPlayer = Players[targetPlayerIndex];
+        Card? card = targetPlayer.HasCard(fishingFor);
+
+        if (card == null)
+            DrawCard(player);
+        else
+        {
+            targetPlayer.RemoveCard(card);
+            player.AddCard(card);
+        }
+    }
+
+    public void DrawCard(Connection connection)
+    {
+        Player? player = GetPlayer(connection);
+        if (player == null)
+            return;
+
+        DrawCard(player);
+    }
+    public void DrawCard(Player player)
+    {
+        Card? card = stockpile.DrawCard();
+        if (card == null)
+            return;
+
+        player.AddCard(card);
+        NextTurn();
+    }
+
+    public void NextTurn()
+        => ActivePlayerIndex = (ActivePlayerIndex + 1) % Players.Count;
+
+    public void Surrender()
     {
         // TODO
-        GameActive = false;
-        return false;
     }
 
-    // public void Restart(Session session)
-    // {
-    //     Player? sender = GetPlayer(remote);
+    public void CheckGameOver()
+    {
+        // TODO
+        // game is over after 
+        //      all cards are removed from the stockpile
+        //      players cant ask for cards anymore
 
-    //     if (sender == null || !sender.IsHost())
-    //     {
-    //         Console.WriteLine("Player not found for " + remote);
-    //         Console.WriteLine("Only Host can restart the game");
-    //         return;
-    //     }
+        GameOver = true;
+        GameActive = false;
+    }
 
-    //     Console.WriteLine("Restarting Game Session for " + remote);
-    //     Initialize();
-    // }
+    #endregion
+
+    #region Game over
+
+    public void ReturnToLobby(Connection connection)
+    {
+        Player? player = GetPlayer(connection);
+        if (player == null || !player.IsHost || GameActive)
+            return;
+
+        // TODO
+        // Return player to lobby
+    }
+
+    # endregion
 }

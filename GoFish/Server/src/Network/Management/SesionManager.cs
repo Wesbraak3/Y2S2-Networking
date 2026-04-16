@@ -30,6 +30,10 @@ class SessionManager
 
         origin.RemoveConnection(connection);
 
+        // if you are the last person in the session clean up the session
+        if (origin.GetConnections().Count <= 0 && origin != LoginSession && origin != LobbySession)
+            RemoveSession(origin.Id);
+
         OSCMessageOut messageOut = new("/SwapScene");
 
         string scene = target.GetType().Name;
